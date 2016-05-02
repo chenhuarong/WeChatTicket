@@ -1,0 +1,3 @@
+{% if user.student_id %}您已经绑定了学号{{ user.student_id }}，若要解绑请回复“解绑”{% else %}抢票等功能必须绑定学号后才能使用。
+
+<a href="{{ handler.url_bind }}">点此绑定学号</a>{% endif %}

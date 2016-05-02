@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="/css/base.css" rel="stylesheet" type="text/css" />
+    <link href="/css/help.css" rel="stylesheet" type="text/css" />
+    <title>帮助 - 紫荆之声</title>
+</head>
+<body>
+<div id="wrap">
+    <header></header>
+
+    <div class="theme" id="theme"></div>
+
+    <hr/>
+    <div id="mainbody"></div>
+
+</div>
+<footer id="footer">
+    <hr />
+    <a href="http://www.xuetangx.com/" target="_blank">学堂在线</a>
+    <a href="http://www.tsinghua.edu.cn/" target="_blank">清华大学</a>
+    <a href="https://github.com/ThssSE" target="_blank">软件工程</a><br>
+    &copy; 2016
+</footer>
+
+<script type="text/template" id="tpl-header">
+    <img class="header-img" src="/img/logo.jpg" />
+</script>
+
+<script type="text/template" id="tpl-theme">
+    {{ name }}使用指南
+</script>
+
+<script type="text/template" id="tpl-mainbody">
+    <div class="section">
+        <h7>抢票</h7>
+    </div>
+    <div class="artical">-听说最近那啥啥要放票了，咱们明天起早去排队吧！</div>
+    <div class="artical">-OUT! 难道你还不知道{{ name }}可以一键抢票？</div>
+   <div class="artical">
+        <div>抢票正在进行中，点击子菜单中的项目进行抢票。</div>
+        <div>抢票活动已结束，点击子菜单中的项目进行查票。</div>
+   </div>
+    <div class="slidedown" id="sd-ticket" onclick="sd_ticket()">
+        <a>
+            <span>
+                <img src="/img/chevron-down.png" />
+            </span>
+            <span>点击展开“抢票技巧”</span></a>
+    </div>
+    <div class="artical" id="querytickets" style="display: none;">
+        <div>您可以输入：</div>
+        <div>“抢票 活动代称”对相应活动进行抢票操作。</div>
+        <div>“取票 活动代称”对相应活动进行取票操作。</div>
+        <div>“退票 活动代称”对相应活动进行退票操作。</div>
+        <div>“节目单 节目代称”可获得相应活动的电子节目单。</div>
+        <div>您可以点击菜单项：</div>
+        <div class="artical">
+            <div>活动抢票进行中，通过点击抢票菜单的该活动，可抢该活动的电子票。</div>
+            <div>活动抢票结束后，通过点击抢票菜单的该活动，可查该活动的电子票。</div>
+        </div>
+    </div>
+
+    <hr/>
+    <div class="section">
+        <h7>服务</h7>
+    </div>
+
+    <div class="artical">
+        <div>【抢啥】
+            查询最近可抢票活动及抢票开始时间。
+        </div>
+        <div>【查票】
+            查询您抢到的电子票。
+        </div>
+        <div>【绑定】
+            用info账号绑定学号，您就可以抢票啦！
+        </div>
+        <div>【帮助】
+            快来学习一下{{ name }}如何使用吧！
+        </div>
+    </div>
+
+    <hr/>
+    <div class="section">
+        <h7>资讯</h7>
+    </div>
+    <div class="artical">
+        &nbsp;&nbsp;&nbsp;&nbsp;不想错过园子里精彩的资讯？又没时间没心情到处搜罗信息？很简单！点我点我！不仅可以点击，还可以直接回复关键字查询哦！
+    </div>
+    <div class="artical">
+        <div>【文艺】
+            简约小清新的文艺资讯。
+        </div>
+        <div>【讲座】
+            大气上档次的讲座信息。
+        </div>
+        <div>【新闻】
+            高端接地气的清华新闻。
+        </div>
+        <div>【人物】
+            低调有内涵的身边人物。
+        </div>
+        <div>【社团】
+            炫酷有深度的社团介绍。
+        </div>
+    </div>
+    <div>
+        <div class="slidedown" id="sd-query" onclick="sd_query()">
+            <a>
+                <span>
+                    <img src="/img/chevron-down.png" />
+                </span>
+                <span>点击展开“查询使用详解”</span></a>
+        </div>
+    </div>
+
+    <div class="artical" id="querydetails" style="display: none">
+    <div> 您可以输入：</div>
+    <div>“活动 xx”查询相关活动。</div>
+    <div>“讲座 xx”查询相关讲座。</div>
+    <div>“新闻 xx”查询相关新闻。</div>
+    <div>“社团 xx”查询相关社团。</div>
+    <div>“部门 xx”查询相关部门。</div>
+
+    <div>您还可以输入：</div>
+    <div>“标题 相关内容”查询标题中含有该内容资讯。</div>
+    <div>“时间 具体时间（段）”查询该时间段的资讯。</div>
+    <div>（例：12月15日18点，15日到18日，明天等时间）</div>
+    <div>“地点 具体地点”查询该地点举行的活动，讲座等。</div>
+
+    <div>您还可以任意输入进行模糊查询。</div>
+    <div>（例：12月的电影，大礼堂的讲座等，我们将为您返回综合内容，时间，地点查询的结果）</div>
+    </div>
+</script>
+
+<script src="/3rd/jquery.js"></script>
+<script src="/3rd/swig.js"></script>
+<script src="/js/weixin_lib.js"></script>
+<script src="/js/help.js"></script>
+
+<script>
+    $(function () {
+        var locals = {
+            name: '紫荆之声'
+        };
+        $('header').html(swig.render($('#tpl-header').html(), {locals: locals}));
+        $('#theme').html(swig.render($('#tpl-theme').html(), {locals: locals}));
+        $('#mainbody').html(swig.render($('#tpl-mainbody').html(), {locals: locals}));
+    });
+</script>
+</body>
+</html>

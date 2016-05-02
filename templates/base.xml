@@ -1,0 +1,7 @@
+<xml>
+    <ToUserName><![CDATA[{{ ToUserName }}]]></ToUserName>
+    <FromUserName><![CDATA[{{ FromUserName }}]]></FromUserName>
+    <CreateTime>{% now "U" %}</CreateTime>
+    <MsgType><![CDATA[{% block msg_type %}{% endblock %}]]></MsgType>
+    {% block content %}{% endblock %}
+</xml>

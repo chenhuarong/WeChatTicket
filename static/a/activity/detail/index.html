@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #content {
+            padding-top: 80px;
+        }
+    </style>
+    <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/css/activity_detail.css" />
+    <title>新建活动 - 紫荆之声</title>
+</head>
+<body>
+    <header class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" style="cursor:default" id="nav-title"></a>
+            </div>
+
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav" id="nav-li"></ul>
+                <ul class="nav navbar-nav navbar-right" id="nav-li-right"></ul>
+            </div>
+        </div>
+    </header>
+
+    <div id="content"></div>
+
+    <footer class="bs-footer" role="contentinfo">
+        <hr>
+        <div class="container" id="footer" style="text-align: center"></div>
+    </footer>
+
+<script type="text/template" id="tpl-nav-title">
+“紫荆之声”票务管理系统
+</script>
+
+<script type="text/template" id="tpl-nav-li">
+    <li><a class="btn-link" href="/a/activity/list">活动列表</a></li>
+    <li class="active">
+        {% if isCreate %}
+            <a href="/a/activity/detail?create=1">新建活动</a>
+        {% else %}
+            <a href="/a/activity/detail?id={{ activity_id }}">{{ activity.name or "正在载入" }}</a>
+        {% endif %}
+    </li>
+</script>
+
+<script type="text/template" id="tpl-nav-li-right">
+    <li><a href="javascript:;" onclick="logout()" >登出</a></li>
+</script>
+
+<script type="text/template" id="tpl-content">
+    {% if status == 0 %}
+    <div class="container" id="detail-processing">
+        <img src="/img/loading.gif">
+        正在载入，请稍候……
+    </div>
+    {% elif status == 1 %}
+    <div class="container" id="detail-processing">
+        <img src="/img/loading.gif">
+        正在执行，请稍候……
+    </div>
+    {% elif status == 2 %}
+    <div class="container" id="detail-result">
+        <h1>处理结果</h1>
+        <pre id="resultHolder">{{ processResult|default('成功') }}</pre>
+        <div class="col-sm-offset-2">
+            <a class="btn btn-info" href="{% if processResult.length == 0 %}/a/activity/detail?id={{ activity.id }}{% else %}javascript:backToForm();{% endif %}">继续修改</a>
+            <a class="btn btn-success" href="/a/activity/list">返回列表</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="container" id="detail-form">
+        <form class="form-horizontal" role="form" method="post" action="{% if isCreate %}/api/a/activity/create{% else %}/api/a/activity/detail{% endif %}" id="activity-form">
+            <div class="form-group">
+                <label for="input-name" class="col-sm-2 control-label" id="label-input-name">活动名称</label>
+                <div class="col-sm-10">
+                    <input type="text" maxlength="26" name="name" class="form-control" id="input-name" placeholder="活动名称，如 马兰花开" autofocus value="{{ activity.name }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="input-key" class="col-sm-2 control-label">活动代称</label>
+                <div class="col-sm-10">
+                    <input type="text" maxlength="12" name="key" class="form-control" id="input-key" placeholder="用户用于抢票的活动代称，推荐使用中文(少于7个字)，如 马兰花开" value="{{ activity.key }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="input-place" class="col-sm-2 control-label">活动地点</label>
+                <div class="col-sm-10">
+                    <input type="text" name="place" class="form-control" id="input-place" placeholder="活动地点，如 大礼堂" value="{{ activity.place }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="input-description" class="col-sm-2 control-label">活动简介</label>
+                <div class="col-sm-10">
+                    <textarea class="form-control" name="description" rows="3" id="input-description" placeholder="描述，如 好看的舞台剧" row="3" style="resize: none;">{{ activity.description }}</textarea>
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <label for="input-pic_url" class="col-sm-2 control-label" min="0">活动配图</label>
+                <div class="col-sm-10">
+                    <input type="url" name="picUrl" class="form-control" id="input-pic_url" style="width:80%;display:inline;" placeholder="请填入图片链接" value="{{ activity.picUrl }}" required>
+                    {% if isCreate or activity.currentTime < activity.endTime %}
+                    <button type="button" class="btn btn-info" style="width:17%;float:right;" id="input-uploadPic" onclick="uploadImage()">上传图片</button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="input-start-year" class="col-sm-2 control-label">活动开始</label>
+                <div class="form-inline col-sm-10" id="input-start_time">
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="4" type="number" id="input-start-year" value="{{ (activity.startTime|default(now)).getFullYear() }}"
+                               name="startTime-year" placeholder="年，>=2016" min="2016" max="2100" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-start-year">年</label>
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-start-month" value="{{ (activity.startTime|default(now)).getMonth() + 1 }}"
+                               name="startTime-month" placeholder="月，1-12" min="1" max="12" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-start-month">月</label>
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-start-day" value="{{ activity.startTime.getDate() }}"
+                               name="startTime-day" placeholder="日，1-31" min="1" max="31" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-start-day">日</label>
+                    </div>
+                    <div class="form-group date-offset">
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-start-hour" value="{{ activity.startTime.getHours() }}"
+                               name="startTime-hour" placeholder="小时，0-23" min="0" max="23" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-start-hour">时</label>
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-start-minute" value="{{ activity.startTime.getMinutes() | default(0) }}"
+                               name="startTime-minute" placeholder="分钟，0-59"min="0" max="59" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-start-minute">分</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-end-year" class="col-sm-2 control-label">活动结束</label>
+                <div class="form-inline col-sm-10" id="input-end_time">
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="4" type="number" id="input-end-year" value="{{ (activity.endTime|default(now)).getFullYear() }}"
+                               name="endTime-year" placeholder="年，>=2016" min="2016" max="2100" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-end-year">年</label>
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-end-month" value="{{ (activity.endTime|default(now)).getMonth() + 1 }}"
+                               name="endTime-month" placeholder="月，1-12" min="1" max="12" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-end-month">月</label>
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-end-day" value="{{ activity.endTime.getDate() }}"
+                               name="endTime-day" placeholder="日，1-31" min="1" max="31" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-end-day">日</label>
+                    </div>
+                    <div class="form-group date-offset">
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-end-hour" value="{{ activity.endTime.getHours() }}"
+                               name="endTime-hour" placeholder="小时，0-23" min="0" max="23" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-end-hour">时</label>
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-end-minute" value="{{ activity.endTime.getMinutes() | default(0) }}"
+                               name="endTime-minute" placeholder="分钟，0-59"min="0" max="59" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-end-minute">分</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="input-total_tickets" class="col-sm-2 control-label">总票数</label>
+                <div class="col-sm-10">
+                    <input type="number" name="totalTickets" class="form-control" id="input-total_tickets" min="1" placeholder="此次活动通过“紫荆之声”的发票总数，如 1000" value="{{ activity.totalTickets }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="input-book-start-year" class="col-sm-2 control-label">抢票开始</label>
+                <div class="form-inline col-sm-10" id="input-book_start">
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="4" type="number" id="input-book-start-year" value="{{ (activity.bookStart|default(now)).getFullYear() }}"
+                               name="bookStart-year" placeholder="年，>=2016" min="2016" max="2100" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-book-start-year">年</label>
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-book-start-month" value="{{ (activity.bookStart|default(now)).getMonth() + 1 }}"
+                               name="bookStart-month" placeholder="月，1-12" min="1" max="12" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-book-start-month">月</label>
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-book-start-day" value="{{ activity.bookStart.getDate() }}"
+                               name="bookStart-day" placeholder="日，1-31" min="1" max="31" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-book-start-day">日</label>
+                    </div>
+                    <div class="form-group date-offset">
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-book-start-hour" value="{{ activity.bookStart.getHours() }}"
+                               name="bookStart-hour" placeholder="小时，0-23" min="0" max="23" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-book-start-hour">时</label>
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-book-start-minute" value="{{ activity.bookStart.getMinutes() | default(0) }}"
+                               name="bookStart-minute" placeholder="分钟，0-59"min="0" max="59" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-book-start-minute">分</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-book-end-year" class="col-sm-2 control-label">抢票结束</label>
+                <div class="form-inline col-sm-10" id="input-book_end">
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="4" type="number" id="input-book-end-year" value="{{ (activity.bookEnd|default(now)).getFullYear() }}"
+                               name="bookEnd-year" placeholder="年，>=2016" min="2016" max="2100" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-book-end-year">年</label>
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-book-end-month" value="{{ (activity.bookEnd|default(now)).getMonth() + 1 }}"
+                               name="bookEnd-month" placeholder="月，1-12" min="1" max="12" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-book-end-month">月</label>
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-book-end-day" value="{{ activity.bookEnd.getDate() }}" name="bookEnd-day"
+                               placeholder="日，1-31" min="1" max="31" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-book-end-day">日</label>
+                    </div>
+                    <div class="form-group date-offset">
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-book-end-hour" value="{{ activity.bookEnd.getHours() }}" name="bookEnd-hour"
+                               placeholder="小时，0-23" min="0" max="23" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-book-end-hour">时</label>
+                    </div>
+                    <div class="form-group date-input">
+                        <input class="form-control" maxlength="2" type="number" id="input-book-end-minute" value="{{ activity.bookEnd.getMinutes() | default(0) }}" name="bookEnd-minute"
+                               placeholder="分钟，0-59"min="0" max="59" step="1" required>
+                    </div>
+                    <div class="form-group date-label">
+                        <label class="control-label" for="input-book-end-minute">分</label>
+                    </div>
+                </div>
+            </div>
+
+            {% if not isCreate and activity.currentTime > activity.bookStart %}
+            <div class="form-group" id="progress-tickets">
+                <label class="col-sm-2 control-label">订票与入场情况</label>
+                <div class="col-sm-10">
+                    <div class="progress progress-in-form">
+                      <div class="progress-bar progress-bar-success" id="tickets-checked" style="width: 0">
+                      </div>
+                      <div class="progress-bar progress-bar-warning" id="tickets-ordered" style="width: 0">
+                      </div>
+                      <div class="progress-bar progress-bar-danger" id="tickets-remain" style="width: 0">
+                      </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    {% if isCreate or activity.currentTime < activity.endTime %}
+                    <button type="button" onclick="publishActivity();" class="btn btn-primary" id="publishBtn">发布</button>
+                    {% endif %}
+                    {% if isCreate or activity.status == 0 %}
+                    <button type="submit" class="btn btn-default" id="saveBtn">暂存</button>
+                    {% endif %}
+                    {% if isCreate or activity.currentTime < activity.endTime %}
+                    <button type="reset" class="btn btn-warning" id="resetBtn">重置</button>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+    <input type="file" id="fileUploadBtn" accept="image/*"/>
+    {% endif %}
+</script>
+
+<script type="text/template" id="tpl-footer">
+    <a href="http://www.xuetangx.com/" target="_blank">学堂在线</a>
+    <a href="http://www.tsinghua.edu.cn/" target="_blank">清华大学</a>
+    <a href="https://github.com/ThssSE" target="_blank">软件工程</a><br>
+    &copy; 2016
+</script>
+
+<script src="/3rd/jquery.js"></script>
+<script src="/3rd/bs/js/bootstrap.min.js"></script>
+<script src="/3rd/swig.js"></script>
+<script src="/js/base.js"></script>
+<script src="/js/base_admin.js"></script>
+<script src="/js/activity_detail.js"></script>
+
+<script>
+    var locals = {
+        status: urlParam.create ? -1 : 0,
+        isCreate: urlParam.create,
+        activity_id: urlParam.id,
+        now: new Date(),
+        processResult: ''
+    };
+    var renderTemplate = function (name) {
+        $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
+    };
+    var render = function () {
+        renderTemplate('nav-title');
+        renderTemplate('nav-li');
+        renderTemplate('nav-li-right');
+        renderTemplate('content');
+        renderTemplate('footer');
+        $('.form-control').on('focus', function() {var me = $(this); setTimeout(function(){me.select();}, 100)});
+        if (urlParam.create) {
+            api.form($('#activity-form'), function (id) {
+                // success
+                locals.activity.id = id;
+            }, function (errno, errmsg, e) {
+                // fail
+                locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
+            }, function (data) {
+                // before
+                data.status = 0;
+                wrapDate(data, 'startTime', 'endTime', 'bookStart', 'bookEnd');
+                if (!locals.activity) {
+                    locals.activity = {};
+                }
+                updateObj(locals.activity, data);
+                if (checktime()) {
+                    locals.status = 1;
+                    locals.processResult = '';
+                    render();
+                    return true;
+                } else {
+                    return false;
+                }
+            }, function () {
+                // complete
+                locals.status = 2;
+                render();
+            });
+        } else {
+            api.form($('#activity-form'), function () {
+
+            }, function (errno, errmsg, e) {
+                locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
+            }, function (data) {
+                wrapDate(data, 'startTime', 'endTime', 'bookStart', 'bookEnd');
+                if (!locals.activity) {
+                    locals.activity = {};
+                }
+                updateObj(locals.activity, data);
+                if (checktime()) {
+                    locals.status = 1;
+                    locals.processResult = '';
+                    render();
+                    return true;
+                } else {
+                    return false;
+                }
+            }, function () {
+                locals.status = 2;
+                render();
+            });
+        }
+        if (locals.activity) {
+            lockByStatus(locals.activity.status, locals.activity.bookStart, locals.activity.startTime, locals.activity.endTime, locals.activity.currentTime);
+            if (!urlParam.create && locals.activity.currentTime > locals.activity.bookStart) {
+                initialProgress(locals.activity.usedTickets, locals.activity.bookedTickets, locals.activity.totalTickets);
+            }
+        }
+
+        $('#fileUploadBtn').on('change', function () {
+            if (this.files.length > 0) {
+                var form = new FormData();
+                form.append('image', this.files[0]);
+                api.postForm('/api/a/image/upload', form, function (imagePath) {
+                    $('#input-pic_url').val(imagePath);
+                }, dftFail);
+            }
+        });
+    };
+    $(function () {
+        swig.setDefaultTZOffset(new Date().getTimezoneOffset());
+        render();
+        loginRequired(function () {
+            if (!urlParam.create) {
+                api.get('/api/a/activity/detail', {id: urlParam.id}, function (data) {
+                    locals.status = -1;
+                    data.id = parseInt(urlParam.id);
+                    locals.activity = data;
+                    render();
+                }, dftFail);
+            }
+        });
+    });
+    var backToForm = function () {
+        locals.status = -1;
+        locals.processResult = '';
+        render();
+    };
+    var publishActivity = function () {
+        var data = {};
+        var form = $('#activity-form');
+        $.each(form.serializeArray(), function (i, input) {
+            data[input.name] = input.value;
+        });
+        data.status = 1;
+        wrapDate(data, 'startTime', 'endTime', 'bookStart', 'bookEnd');
+        if (!locals.activity) {
+            locals.activity = {};
+        }
+        updateObj(locals.activity, data);
+        if (checktime()) {
+            locals.status = 1;
+            locals.processResult = '';
+            render();
+            api.post(form.attr('action'), data, function (id) {
+                if (urlParam.create) {
+                    locals.activity.id = id;
+                }
+            }, function (errno, errmsg, e) {
+                locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
+            }, function () {
+                locals.status = 2;
+                render();
+            });
+        } else {
+            return false;
+        }
+    };
+    var uploadImage = function () {
+        $('#fileUploadBtn').click();
+    };
+</script>
+</body>
+</html>

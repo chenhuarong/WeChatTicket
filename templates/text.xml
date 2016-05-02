@@ -1,0 +1,3 @@
+{% extends "base.xml" %}
+{% block msg_type %}text{% endblock %}
+{% block content %}<Content><![CDATA[{{ Content }}]]></Content>{% endblock %}

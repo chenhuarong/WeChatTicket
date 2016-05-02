@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="/css/base.css" rel="stylesheet" type="text/css" />
+    <link href="/css/details.css" rel="stylesheet" type="text/css" />
+    <title>活动详情 - 紫荆之声</title>
+</head>
+<body>
+<div id="wrap">
+    <header></header>
+
+    <div class="theme" id="theme"></div>
+
+    <hr/>
+    <div id="mainbody"></div>
+
+</div>
+<footer id="footer">
+    <hr />
+    <a href="http://www.xuetangx.com/" target="_blank">学堂在线</a>
+    <a href="http://www.tsinghua.edu.cn/" target="_blank">清华大学</a>
+    <a href="https://github.com/ThssSE" target="_blank">软件工程</a><br>
+    &copy; 2016
+</footer>
+
+<script type="text/template" id="tpl-header">
+    <img class="header-img" src="/img/logo.jpg" />
+</script>
+
+<script type="text/template" id="tpl-theme">
+    {% if activity %}
+        {{ activity.name }}
+    {% else %}
+        正在加载……
+    {% endif %}
+</script>
+
+<script type="text/template" id="tpl-mainbody">
+    {% if activity %}
+    <div class="details-text">
+        {% if activity.currentTime < activity.bookStart %}
+            <div class="timer-wrapper" id="beforebook">
+            <h7>距抢票开始还有：</h7>
+            </div>
+        {% elif activity.currentTime > activity.bookEnd %}
+            <div class="invalid-time">
+            <h7>抢票已结束，感谢您的关注！</h7>
+            </div>
+        {% else %}
+            <div class="timer-wrapper" id="duringbook">
+            <h7>抢票正在进行中，距抢票结束还有：</h7>
+            </div>
+        {% endif %}
+        <div class="details-divider"></div>
+        <div style="text-align: center;min-width: 300px">
+            <div id="activitytimer"></div>
+        </div>
+        <div class="details-divider"></div>
+        <div class="details-divider"></div>
+
+        {% if activity.currentTime < activity.bookStart %}
+            <div  id="ticket-before-book">
+                <div class="timer-wrapper">
+                <h7>活动预计发票：</h7>
+                </div>
+                <div style="text-align: center;">
+                    <span class="ticket">{{ activity.totalTickets }}</span>张
+                </div>
+            </div>
+            <div class="details-divider"></div>
+        {% elif activity.currentTime > activity.bookEnd %}
+
+        {% else %}
+            <div id="ticket-during-book">
+                <div class="timer-wrapper">
+                <h7>当前余票：(截至{{ activity.currentTime|date("Y年m月d日 H:i:s") }})</h7>
+                </div>
+                <div class="details-divider"></div>
+                <div style="text-align: center;">
+                    <span class="ticket">{{ activity.remainTickets }}</span>张
+                </div>
+            </div>
+            <div class="details-divider"></div>
+        {% endif %}
+
+        <div class="timer-wrapper">
+        <h7>抢票时间：</h7>
+        </div>
+        <div class="details-wrapper">
+            <div class="text-inner">
+
+                {% if activity.bookStart.getYear() != activity.bookEnd.getYear() %}
+                <div class="trigger" >
+                    <h7>开始时间：{{ activity.bookStart|date("Y年m月d日 H:i") }}</h7>
+                </div>
+                <div class="trigger">
+                    <h7>结束时间：{{ activity.bookEnd|date("Y年m月d日 H:i") }}</h7>
+                </div>
+                {% elif activity.bookStart.getMonth() != activity.bookEnd.getMonth() %}
+                <div class="trigger">
+                    <h9>{{ activity.bookStart|date("Y年m月d日 H:i") }} 至 {{ activity.bookEnd|date("m月d日 H:i") }}</h9>
+                </div>
+                {% elif activity.bookStart.getDate() != activity.bookEnd.getDate() %}
+                <div class="trigger">
+                    <h8>{{ activity.bookStart|date("Y年m月d日 H:i") }} 至 {{ activity.bookEnd|date("d日 H:i") }}</h8>
+                </div>
+                {% else %}
+                <div class="trigger">
+                    <h7>{{ activity.bookStart|date("Y年m月d日 H:i") }} 至 {{ activity.bookEnd|date("H:i") }}</h7>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+        <div class="details-divider"></div>
+
+        <div class="timer-wrapper">
+        <h7>活动时间：</h7>
+        </div>
+        <div class="details-wrapper">
+            <div class="text-inner">
+
+                {% if activity.startTime.getYear() != activity.endTime.getYear() %}
+                <div class="trigger" >
+                    <h7>开始时间：{{ activity.startTime|date("Y年m月d日 H:i") }}</h7>
+                </div>
+                <div class="trigger">
+                    <h7>结束时间：{{ activity.endTime|date("Y年m月d日 H:i") }}</h7>
+                </div>
+                {% elif activity.startTime.getMonth() != activity.endTime.getMonth() %}
+                <div class="trigger">
+                    <h9>{{ activity.startTime|date("Y年m月d日 H:i") }} 至 {{ activity.endTime|date("m月d日H:i") }}</h9>
+                </div>
+                {% elif activity.startTime.getDate() != activity.endTime.getDate() %}
+                <div class="trigger">
+                    <h8>{{ activity.startTime|date("Y年m月d日 H:i") }} 至 {{ activity.endTime|date("d日H:i") }}</h8>
+                </div>
+                {% else %}
+                <div class="trigger">
+                    <h7>{{ activity.startTime|date("Y年m月d日 H:i") }} 至 {{ activity.endTime|date("H:i") }}</h7>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+        <div class="details-divider"></div>
+
+        <div class="timer-wrapper">
+        <h7>活动地点：</h7>
+        </div>
+        <div class="details-wrapper">
+            <div class="text-inner">
+                <div class="trigger">
+                    <h7>{{ activity.place }}</h7>
+                </div>
+            </div>
+        </div>
+        <div class="details-divider"></div>
+
+        <div class="timer-wrapper">
+        <h7>活动代称：</h7>
+        </div>
+        <div class="timer-wrapper">
+        <h9>(回复“抢票/取票/退票 {{ activity.key }}”可进行相应操作)</h9>
+        </div>
+        <div class="details-wrapper">
+            <div class="text-inner">
+                <div class="trigger">
+                    <h7 class="highlight">{{ activity.key }}   </h7>
+                </div>
+            </div>
+        </div>
+        <div class="details-divider"></div>
+
+
+        <div class="timer-wrapper">
+        <h7>活动详情：</h7>
+        </div>
+        <div class="details-wrapper" id="actdetails">
+            <div class="text-inner">
+                <div class="details-wrapper img-wrapper">
+                    <div class="img-inner">
+                        <img class="details-img" src="{{ activity.picUrl  }}" />
+                    </div>
+                </div>
+                <div class="details-divider"></div>
+                <div class="trigger">
+                    <pre>{{ activity.description }}</pre>
+                </div>
+            </div>
+        </div>
+        <div class="details-divider"></div>
+
+    </div>
+    {% endif %}
+</script>
+
+<script src="/3rd/jquery.js"></script>
+<script src="/3rd/swig.js"></script>
+<script src="/js/weixin_lib.js"></script>
+<script src="/js/base.js"></script>
+<script src="/js/details.js"></script>
+
+<script>
+    var locals = {};
+    var render = function () {
+        $('header').html(swig.render($('#tpl-header').html(), {locals: locals}));
+        $('#theme').html(swig.render($('#tpl-theme').html(), {locals: locals}));
+        $('#mainbody').html(swig.render($('#tpl-mainbody').html(), {locals: locals}));
+    };
+    $(function () {
+        swig.setDefaultTZOffset(new Date().getTimezoneOffset());
+        render();
+        api.get('/api/u/activity/detail', {id: urlParam.id}, function (data) {
+            updateDate(data, 'startTime', 'endTime', 'bookStart', 'bookEnd', 'currentTime');
+            locals.activity = data;
+            startCounting(Date.now() - locals.activity.currentTime.getTime(), locals.activity);
+        }, dftFail);
+    });
+</script>
+</body>
+</html>

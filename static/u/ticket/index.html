@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="/css/base.css" rel="stylesheet" type="text/css" />
+    <link href="/css/ticket.css" rel="stylesheet" type="text/css" />
+    <title>我的电子票 - 紫荆之声</title>
+</head>
+<body>
+<div id="wrap">
+    <header></header>
+
+    <div class="theme" id="theme"></div>
+
+    <hr/>
+    <div id="mainbody"></div>
+
+</div>
+<footer id="footer">
+    <hr />
+    <a href="http://www.xuetangx.com/" target="_blank">学堂在线</a>
+    <a href="http://www.tsinghua.edu.cn/" target="_blank">清华大学</a>
+    <a href="https://github.com/ThssSE" target="_blank">软件工程</a><br>
+    &copy; 2016
+</footer>
+
+<script type="text/template" id="tpl-header">
+    <img class="header-img" src="/img/logo.jpg" />
+</script>
+
+<script type="text/template" id="tpl-theme">
+    {% if ticket %}
+        “{{ ticket.activityName }}”电子票
+    {% else %}
+        正在载入……
+    {% endif %}
+</script>
+
+<script type="text/template" id="tpl-mainbody">
+{% if ticket %}
+    <div class="details-wrapper img-wrapper">
+        <div class="img-inner" id="ticket-qrcode"></div>
+    </div>
+    <!--
+    <div class="img-caption">
+        （长按图片可保存至手机）
+    </div>-->
+    <div class="details-divider"></div>
+
+    <div class="ticket-wrapper">
+        <b>电子票状态：</b>
+        {% if ticket.currentTime < ticket.endTime %}
+            {% if ticket.status == 1 %}
+                <span class="status-size ticket-valid">未使用</span>
+            {% elif ticket.status == 2 %}
+                <span class="status-size ticket-used">已使用</span>
+            {% else %}
+                <span class="status-size ticket-invalid">无效</span>
+            {% endif %}
+        {% else %}
+            <span class="status-size ticket-used">活动已结束</span>
+        {% endif %}
+    </div>
+    <div class="ticket-wrapper">
+        活动地点：<b>{{ ticket.place }}</b>
+    </div>
+    <div class="ticket-wrapper">
+        活动开始时间：<b>{{ ticket.startTime|date("Y年m月d日 H:i") }}</b>
+    </div>
+    <div class="ticket-wrapper">
+        活动结束时间：<b>{{ ticket.endTime|date("Y年m月d日 H:i") }}</b>
+    </div>
+    {% if ticket.status == 1 %}
+    <div class="ticket-wrapper">
+        <span class="status-size ticket-valid">活动开始前45分钟凭本电子票入场</span>
+    </div>
+    <div class="ticket-wrapper">
+        <b>回复“退票 {{ ticket.activityKey }}”即可退票</b>
+    </div>
+    {% endif %}
+{% endif %}
+</script>
+
+<script src="/3rd/jquery.js"></script>
+<script src="/3rd/swig.js"></script>
+<script src="/3rd/qrcode.js"></script>
+<script src="/js/weixin_lib.js"></script>
+<script src="/js/base.js"></script>
+<script src="/js/ticket.js"></script>
+
+<div id="qrcode-generator" style="display: none;">
+</div>
+
+<script>
+    var locals = {};
+    var render = function () {
+        $('header').html(swig.render($('#tpl-header').html(), {locals: locals}));
+        $('#theme').html(swig.render($('#tpl-theme').html(), {locals: locals}));
+        $('#mainbody').html(swig.render($('#tpl-mainbody').html(), {locals: locals}));
+        if (locals.ticket) {
+            $('#ticket-qrcode').qrcode(locals.ticket.uniqueId);
+        }
+    };
+    $(function () {
+        swig.setDefaultTZOffset(new Date().getTimezoneOffset());
+        render();
+        api.get('/api/u/ticket/detail', {openid: urlParam.openid, ticket: urlParam.ticket}, function (data) {
+            updateDate(data, 'startTime', 'endTime', 'currentTime');
+            locals.ticket = data;
+            render();
+        }, dftFail);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{% extends "base.xml" %}
+{% block msg_type %}news{% endblock %}
+{% block content %}
+    <ArticleCount>{{ Articles | length }}</ArticleCount>
+    <Articles>
+        {% for Article in Articles %}
+        <item>
+            <Title><![CDATA[{{ Article.Title }}]]></Title>
+            <Description><![CDATA[{{ Article.Description }}]]></Description>
+            <PicUrl><![CDATA[{{ Article.PicUrl }}]]></PicUrl>
+            <Url><![CDATA[{{ Article.Url }}]]></Url>
+        </item>
+        {% endfor %}
+    </Articles>
+{% endblock %}

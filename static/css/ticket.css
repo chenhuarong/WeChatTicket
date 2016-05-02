@@ -1,0 +1,28 @@
+.ticket-wrapper{
+    padding-left: 10px;
+    padding-bottom: 8px;
+    text-align: center;
+}
+.details-wrapper{
+    text-align: center;
+    padding-bottom: 5px;
+}
+img{
+    width: 25%;
+}
+.status-size{
+    font-size: 18px;
+}
+.ticket-invalid{
+   color: red;
+}
+.ticket-valid{
+   color: green;
+}
+.ticket-used{
+    color: orangered;
+}
+.img-caption{
+    text-align: center;
+    padding-top: 3px;
+}

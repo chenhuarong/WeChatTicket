@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #content {
+            padding-top: 80px;
+        }
+    </style>
+    <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/css/activity_list.css" />
+
+    <title>活动列表 - 紫荆之声</title>
+</head>
+<body>
+    <header class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" style="cursor:default" id="nav-title"></a>
+            </div>
+
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav" id="nav-li"></ul>
+                <ul class="nav navbar-nav navbar-right" id="nav-li-right"></ul>
+            </div>
+        </div>
+    </header>
+
+    <div id="content"></div>
+
+    <footer class="bs-footer" role="contentinfo">
+        <hr>
+        <div class="container" id="footer" style="text-align: center"></div>
+    </footer>
+
+<script type="text/template" id="tpl-nav-title">
+“紫荆之声”票务管理系统
+</script>
+
+<script type="text/template" id="tpl-nav-li">
+    <li class="active"><a class="btn-link" href="/a/activity/list">活动列表</a></li>
+</script>
+
+<script type="text/template" id="tpl-nav-li-right">
+    <li><a href="javascript:;" onclick="logout()" >登出</a></li>
+</script>
+
+<script type="text/template" id="tpl-content">
+    <div class="container" xmlns="http://www.w3.org/1999/html">
+        <div class="pageheader">
+            <h1 class="lead">活动列表</h1>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <a class="btn btn-default" href="/a/activity/detail?create=1">新增活动</a>
+                <a class="btn btn-default" href="/a/activity/menu">设置微信抢票菜单</a>
+            </div>
+
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>状态</th>
+                    <th>名称</th>
+                    <th>简介</th>
+                    <th>活动时间</th>
+                    <th>地点</th>
+                    <th>订票时间</th>
+                    <th>操作</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody id="tbody-activities">
+                {% for act in activities %}
+                <tr id="act-{{ act.id }}">
+                    <td class="td-status">
+                        {{ getSmartStatus(act) }}
+                    </td>
+                    <td class="td-name">
+                        {{ act.name }}
+                    </td>
+                    <td class="td-description">
+                        {% if act.description.length > 55 %}
+                            {{ act.description.substr(0, 55) }}... <a style="cursor:pointer;" ref-data="{{ act.description }}" ref-hint="收起" onclick="expand_long_text(this);">展开</a>
+                        {% else %}
+                            {{ act.description }}
+                        {% endif %}
+                    </td>
+                    <td class="td-activity_time">
+                        {{ getSmartTimeRange(act.startTime, act.endTime) }}
+                    </td>
+                    <td class="td-place">
+                        {{ act.place }}
+                    </td>
+                    <td class="td-book_time">
+                        {{ getSmartTimeRange(act.bookStart, act.bookEnd) }}
+                    </td>
+                    <td class="td-operations">
+                    {% if act.currentTime >= act.bookStart and act.currentTime <= act.endTime %}
+                        <a href="/a/activity/checkin?id={{ act.id }}" target="_blank">
+                            <span class="glyphicon glyphicon-check">检票</span>
+                        </a>
+                    {% endif %}
+                        <a href="/a/activity/detail?id={{ act.id }}">
+                            <span class="glyphicon glyphicon-pencil">详情</span>
+                        </a>
+                    </td>
+                    <td class="td-delete">
+                    {% if act.currentTime >= act.bookStart and act.currentTime <= act.endTime %}
+                        <span id="del-{{ act.id }}" class="td-ban glyphicon glyphicon-ban-circle" ></span>
+                    {% else %}
+                        <a href="javascript:;" id="del-{{ act.id }}" onclick="deleteact({{ act.id }})">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </a>
+                    {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="deleteid" style="display: none;"></div>
+    <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="delModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="delCancel()">&times;</button>
+            <h4 class="modal-title" id="delModalLabel">确认删除</h4>
+          </div>
+          <div class="modal-body" id="modalcontent">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal" onclick="delConfirm()">确认</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="delCancel()">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</script>
+
+<script type="text/template" id="tpl-footer">
+    <a href="http://www.xuetangx.com/" target="_blank">学堂在线</a>
+    <a href="http://www.tsinghua.edu.cn/" target="_blank">清华大学</a>
+    <a href="https://github.com/ThssSE" target="_blank">软件工程</a><br>
+    &copy; 2016
+</script>
+
+<script src="/3rd/jquery.js"></script>
+<script src="/3rd/bs/js/bootstrap.min.js"></script>
+<script src="/3rd/swig.js"></script>
+<script src="/js/base.js"></script>
+<script src="/js/base_admin.js"></script>
+<script src="/js/activity_list.js"></script>
+
+<script>
+    var locals = {
+        activities: []
+    };
+    var renderTemplate = function (name) {
+        $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
+    };
+    var render = function () {
+        renderTemplate('nav-title');
+        renderTemplate('nav-li');
+        renderTemplate('nav-li-right');
+        renderTemplate('content');
+        renderTemplate('footer');
+        createtips();
+    };
+    $(function () {
+        swig.setDefaultTZOffset(new Date().getTimezoneOffset());
+        render();
+        loginRequired(function () {
+            api.get('/api/a/activity/list', {}, function (data) {
+                $.each(data, function (i, act) {
+                    updateDate(act, 'startTime', 'endTime', 'bookStart', 'bookEnd', 'currentTime');
+                });
+                locals.activities = data;
+                render();
+            }, dftFail);
+        });
+    });
+</script>
+</body>
+</html>

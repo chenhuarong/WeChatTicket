@@ -1,0 +1,73 @@
+html {
+    font-size: 62.5%;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: "微软雅黑", "黑体", "宋体";
+    font-size: 12px;
+    line-height: 1.428571429;
+    background: url("../img/bg.png");
+    color: #423932;
+}
+
+hr {
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border: 0;
+    width: 90%;
+    border-top: 1px solid #CDCECF;
+}
+
+footer,
+header {
+    display: block;
+}
+
+.header-img {
+    width: 100%;
+}
+
+.theme {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 10px 5px 0px 5px;
+    word-break: break-all;
+}
+
+h7 {
+    font-size: 14px;
+}
+
+h8 {
+    font-size: 12px;
+}
+
+h9 {
+    font-size: 11px;
+}
+
+html, body, #wrap {
+    height: 100%;
+}
+
+body > #wrap {
+    height: auto;
+    min-height: 100%;
+}
+
+#mainbody {
+    padding-bottom: 50px; /* the same height value with footer */
+}
+
+#footer {
+    position: relative;
+    margin-top: -60px; /* minus footer height */
+    height: 37px; /* a little smaller than 50 to avoid scroll*/
+    clear: both;
+    text-align: center;
+}
