@@ -84,7 +84,7 @@ class CustomWeChatView(WeChatView):
     def update_menu(cls, activities=None):
         """
         :param activities: list of Activity
-        :return: True if updated, False if no updates
+        :return: None
         """
         if activities is not None:
             if len(activities) > 5:

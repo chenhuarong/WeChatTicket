@@ -33,9 +33,9 @@ class StaticFileView(BaseView):
         content = self.get_file(os.path.join(settings.STATIC_ROOT, rpath))
         if content is not None:
             return HttpResponse(content, content_type=mimetypes.guess_type(rpath)[0])
-        content = self.get_file(os.path.join(settings.STATIC_ROOT, rpath + '.html'))
-        if content is not None:
-            return HttpResponse(content, content_type=mimetypes.guess_type(rpath + '.html')[0])
+        # content = self.get_file(os.path.join(settings.STATIC_ROOT, rpath + '.html'))
+        # if content is not None:
+        #     return HttpResponse(content, content_type=mimetypes.guess_type(rpath + '.html')[0])
         content = self.get_file(os.path.join(settings.STATIC_ROOT, rpath + '/index.html'))
         if content is not None:
             return HttpResponse(content, content_type=mimetypes.guess_type(rpath + '/index.html')[0])
